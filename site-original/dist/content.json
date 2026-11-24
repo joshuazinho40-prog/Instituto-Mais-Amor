@@ -1,0 +1,170 @@
+{
+  "services": [
+    {
+      "title": "Fonoaudiologia",
+      "text": "Área de cuidado voltada à comunicação, linguagem, fala, voz, audição e funções relacionadas, contribuindo para o desenvolvimento e a qualidade de vida."
+    },
+    {
+      "title": "Terapia ocupacional",
+      "text": "Área voltada ao desenvolvimento de habilidades, funcionalidade, autonomia e participação nas atividades cotidianas."
+    },
+    {
+      "title": "Fisioterapia",
+      "text": "Área relacionada ao desenvolvimento motor, mobilidade, funcionalidade e reabilitação."
+    },
+    {
+      "title": "Psicologia",
+      "text": "Área voltada à saúde emocional, ao desenvolvimento psicológico e ao apoio às necessidades individuais e familiares."
+    },
+    {
+      "title": "Psicopedagogia",
+      "text": "Área dedicada aos processos de aprendizagem, às dificuldades educacionais e ao desenvolvimento de estratégias de apoio pedagógico."
+    }
+  ],
+  "projects": [
+    {
+      "id": "1",
+      "title": "Mais Amor Perto De Você",
+      "text": "Canal de acolhimento e comunicação pensado para aproximar famílias do Instituto.",
+      "goals": [
+        "Facilitar o primeiro contato.",
+        "Ouvir as necessidades das famílias.",
+        "Promover uma escuta humanizada.",
+        "Oferecer orientações conforme a estrutura disponível.",
+        "Possibilitar encaminhamentos quando viáveis.",
+        "Construir vínculos com a comunidade."
+      ],
+      "tail": "",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "2",
+      "title": "Mãe, Você Não Está Sozinha",
+      "text": "Iniciativa de acolhimento e fortalecimento de mães atípicas.",
+      "goals": [
+        "Escuta acolhedora.",
+        "Fortalecimento emocional e comunitário.",
+        "Compartilhamento de experiências.",
+        "Orientação sobre direitos e inclusão.",
+        "Construção de redes de apoio."
+      ],
+      "tail": "",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "3",
+      "title": "Infância Sem Barreiras",
+      "text": "Iniciativa dedicada à inclusão de crianças com deficiência, incluindo crianças com síndrome de Down.",
+      "goals": [
+        "Valorizar o desenvolvimento infantil.",
+        "Incentivar práticas inclusivas.",
+        "Fortalecer a participação familiar.",
+        "Combater preconceitos.",
+        "Promover oportunidades de convivência e aprendizagem."
+      ],
+      "tail": "",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "4",
+      "title": "Mais Amor Em Movimento",
+      "text": "Proposta de inclusão por meio do esporte, lazer, cultura e atividades comunitárias.",
+      "goals": [
+        "Incentivar a participação.",
+        "Promover convivência.",
+        "Ampliar oportunidades de lazer.",
+        "Valorizar habilidades.",
+        "Desenvolver ações inclusivas."
+      ],
+      "tail": "",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "5",
+      "title": "Conhecer Para Incluir",
+      "text": "Proposta educativa com:",
+      "goals": [
+        "Oficinas.",
+        "Cursos.",
+        "Palestras.",
+        "Seminários.",
+        "Estudos e pesquisas.",
+        "Ações de conscientização.",
+        "Educação sobre direitos e cidadania."
+      ],
+      "tail": "",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "6",
+      "title": "Rede Mais Amor",
+      "text": "Iniciativa de articulação entre:",
+      "goals": [
+        "Voluntários.",
+        "Profissionais.",
+        "Empresas.",
+        "Universidades.",
+        "Organizações sociais.",
+        "Órgãos públicos.",
+        "Entidades privadas."
+      ],
+      "tail": "Objetivo: desenvolver conexões para fortalecer e ampliar o alcance das iniciativas institucionais.",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "7",
+      "title": "Corrente Do Bem",
+      "text": "Proposta de mobilização solidária e participação comunitária.",
+      "goals": [],
+      "tail": "Objetivo: conectar pessoas interessadas em contribuir com ações de solidariedade, acolhimento e inclusão.",
+      "status": "Em planejamento"
+    },
+    {
+      "id": "8",
+      "title": "Mais Amor, Mais Oportunidades",
+      "text": "Iniciativa voltada à formação, autonomia, acesso ao conhecimento e valorização das potencialidades individuais.",
+      "goals": [],
+      "tail": "Objetivo: aproximar pessoas de oportunidades educativas, sociais, culturais e de desenvolvimento.",
+      "status": "Em planejamento"
+    }
+  ],
+  "article": [
+    "Prestar atendimento multidisciplinar especializado e terapêutico, por meio da oferta de serviços em Fonoaudiologia, Terapia Ocupacional, Fisioterapia, Psicologia e Psicopedagogia, voltados à reabilitação, ao desenvolvimento cognitivo, motor, emocional e à melhoria da qualidade de vida dos atendidos;",
+    "Prestar assistência social, acompanhamento, apoio e fortalecimento de vínculos às pessoas com deficiência, neurodivergentes, em situação de vulnerabilidade social e suas famílias;",
+    "Promover a inclusão social, cultural, laboral, pedagógica, esportiva e de lazer da pessoa com deficiência e demais beneficiários dos programas do Instituto;",
+    "Oferecer suporte clínico, pedagógico e assistencial integrado, articulando ações de saúde, educação e assistência social;",
+    "Promover estudos, pesquisas, cursos, oficinas, palestras e seminários focados na difusão de conhecimentos, defesa de direitos e promoção da cidadania;",
+    "Articular com órgãos públicos e entidades privadas a garantia, defesa e ampliação dos direitos sociais."
+  ],
+  "paragraph": "Todas as atividades, atendimentos e terapias são prestados de forma gratuita, contínua e sem qualquer distinção de nacionalidade, raça, cor, sexo, crença ou orientação política.",
+  "faq": [
+    [
+      "O que é o Instituto Mais Amor?",
+      "O Instituto Mais Amor é um projeto de finalidade social voltado ao cuidado, à inclusão, ao desenvolvimento humano, à assistência social e à defesa de direitos."
+    ],
+    [
+      "Quem faz parte do público atendido?",
+      "Suas finalidades contemplam pessoas com deficiência, pessoas neurodivergentes, famílias e pessoas em situação de vulnerabilidade social, conforme os programas e critérios de atendimento que forem implementados."
+    ],
+    [
+      "Os atendimentos são gratuitos?",
+      "A gratuidade dos atendimentos e atividades é um compromisso previsto nas finalidades estatutárias do Instituto. A disponibilidade de cada serviço deve ser consultada nos canais oficiais."
+    ],
+    [
+      "Quais especialidades fazem parte das finalidades institucionais?",
+      "Fonoaudiologia, Terapia Ocupacional, Fisioterapia, Psicologia e Psicopedagogia."
+    ],
+    [
+      "Como solicitar informações ou acolhimento?",
+      "Por meio do canal oficial de contato, quando disponibilizado."
+    ],
+    [
+      "Como posso apoiar o Instituto?",
+      "Manifestando interesse em voluntariado, colaboração ou parceria institucional por meio dos canais oficiais."
+    ],
+    [
+      "O Instituto possui parceria com o governo?",
+      "O Instituto prevê, entre suas finalidades, articulação com órgãos públicos e entidades privadas. Eventuais parcerias formalizadas serão divulgadas oficialmente."
+    ]
+  ]
+}

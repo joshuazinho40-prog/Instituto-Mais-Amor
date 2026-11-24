@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Sitemap: https://instituto-mais-amor-inclusao.joshuazinho40.chatgpt.site/sitemap.xml
+Disallow: /api/admin/
+Disallow: /api/anexos/
+Disallow: /documentos/
+Disallow: /transparencia

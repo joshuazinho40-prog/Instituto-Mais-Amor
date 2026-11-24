@@ -1,0 +1,1 @@
+CREATE TABLE acoes (id TEXT PRIMARY KEY NOT NULL,titulo TEXT NOT NULL,resumo TEXT NOT NULL,conteudo TEXT NOT NULL,data_realizacao TEXT NOT NULL,publicada INTEGER NOT NULL DEFAULT 0,criado_em TEXT NOT NULL,atualizado_em TEXT NOT NULL);

@@ -1,0 +1,11 @@
+from pathlib import Path
+r=Path(__file__).resolve().parent.parent
+p=r/'dist/admin.js';s=p.read_text(encoding='utf-8');s=s.replace("details.append(label,notesLabel,save,result);", """const remove=el('button','Excluir cadastro');remove.className='button light';remove.style.marginLeft='12px';remove.onclick=async()=>{if(!confirm('Excluir definitivamente este cadastro e suas anotações? Essa ação não pode ser desfeita.'))return;remove.disabled=true;try{await api('/api/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:item.id,confirmacao:item.id})});await load();await stats();}catch(e){result.textContent=e.message;remove.disabled=false;}};details.append(label,notesLabel,save,remove,result);""");p.write_text(s,encoding='utf-8')
+p=r/'dist/admin.html';s=p.read_text(encoding='utf-8').replace('Use Arquivado para retirar um contato do acompanhamento ativo.','Use Arquivado para retirar um contato do acompanhamento ativo. Excluir cadastro apaga definitivamente os dados e as anotações, após sua confirmação.');p.write_text(s,encoding='utf-8')
+# Make the administrative entry discoverable without exposing its records.
+for p in (r/'dist').glob('*.html'):
+ if p.name=='admin.html':continue
+ s=p.read_text(encoding='utf-8').replace('</footer>','<div class="wrap" style="padding-bottom:24px"><a href="/admin">Área administrativa</a></div></footer>');p.write_text(s,encoding='utf-8')
+# Use the same restrained form styling throughout the public site.
+p=r/'dist/modern.css';s=p.read_text(encoding='utf-8');s+='\nform[data-interest] fieldset{background:#fff;border:1px solid #d5ddef;border-radius:22px;padding:25px}form[data-interest] input,form[data-interest] textarea{background:#fafbff;border:1px solid #aab7d0;color:#17214f;border-radius:10px}form[data-interest] input::placeholder,form[data-interest] textarea::placeholder{color:#57647c}form[data-interest] label,form[data-interest] legend{color:#17214f}form[data-interest] .check input{width:20px;min-width:20px}.form-result{overflow-wrap:anywhere;color:#173f30!important}.form-result:not(:empty){background:#e8f6ef;padding:16px;border-radius:12px}';p.write_text(s,encoding='utf-8')
+print('Administrative controls finalized')

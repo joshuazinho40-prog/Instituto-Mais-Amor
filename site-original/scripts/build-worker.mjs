@@ -1,0 +1,31 @@
+import {existsSync,readdirSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import path from 'node:path';
+import {prepareProjectPages} from './prepare-project-pages.mjs';
+import {prepareInstitutional} from './prepare-institutional.mjs';
+import {preparePrivateDocuments} from './prepare-private-documents.mjs';
+import {prepareEvolution} from './prepare-evolution.mjs';
+import {prepareAdminWorkspace} from './prepare-admin-workspace.mjs';
+import {prepareCrm} from './prepare-crm.mjs';
+import {prepareHeroVideoCard} from './prepare-hero-video-card.mjs';
+prepareProjectPages();
+prepareInstitutional();
+preparePrivateDocuments();
+prepareEvolution();
+
+prepareCrm();
+prepareAdminWorkspace();
+prepareHeroVideoCard();
+const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.pdf':'application/pdf','.mp4':'video/mp4','.vtt':'text/vtt','.ttf':'font/ttf','.xml':'application/xml','.txt':'text/plain'};
+const assets={};function walk(dir,prefix=''){for(const e of readdirSync(dir,{withFileTypes:true})){if(e.name==='server'||e.name==='.openai'||e.name==='content.json'||e.name==='documentos'||e.name==='private')continue;const rel=prefix+'/'+e.name;if(e.isDirectory())walk(path.join(dir,e.name),rel);else assets[rel]={type:types[path.extname(e.name)]||'application/octet-stream',data:readFileSync(path.join(dir,e.name)).toString('base64')};}}
+const statutePath='private/documentos/estatuto-social-instituto-mais-amor.pdf';
+const statute=existsSync(statutePath)?readFileSync(statutePath):null;
+const adminEmail=(process.env.MAIS_AMOR_ADMIN_EMAIL||'admin@example.test').trim().toLowerCase();
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail))throw Error('MAIS_AMOR_ADMIN_EMAIL precisa ser um e-mail válido.');
+const privateDocumentPayload=statute?{'estatuto-social':{metadata:{titulo:'Estatuto social e modelo de ata',descricao:'Documento original fornecido pelo Instituto. PDF de 5 páginas; o modelo de ata contém campos de preenchimento. Consulta restrita à administração.',nome:'Estatuto Social - Instituto Mais Amor.pdf',mime:'application/pdf',tamanho:statute.length},data:statute.toString('base64')}}:{};
+const original=JSON.parse(readFileSync('content.json','utf8')).projects;
+const covers=['familia-inclusiva.jpg','educacao-diversa.jpg','aprender-juntos.jpg','educacao-diversa.jpg','aprender-juntos.jpg','familia-inclusiva.jpg','educacao-diversa.jpg','aprender-juntos.jpg'];
+const stateKeys={'Em planejamento':'planejamento','Em desenvolvimento':'desenvolvimento','Em atividade':'atividade'};
+const seeds=original.map((p,i)=>({id:p.id,titulo:p.title,resumo:p.text,descricao:[p.text,p.tail].filter(Boolean).join('\n\n'),objetivos:p.goals,situacao:stateKeys[p.status],capa:'/assets/'+covers[i],capa_alt:'Imagem ilustrativa do projeto '+p.title,destaque:i<3,ordem:(i+1)*10}));
+const projectModule=readFileSync('worker/public-projects.js','utf8').replace('/*PUBLIC_PROJECT_SEEDS*/[]',JSON.stringify(seeds));
+walk('dist');mkdirSync('dist/server',{recursive:true});let worker=readFileSync('worker/index.js','utf8').replace("import assets from './assets.js';",()=> 'const assets='+JSON.stringify(assets)+';').replace("import './metrics.js';",()=>readFileSync('worker/metrics.js','utf8')).replace("import './site-media.js';",()=>readFileSync('worker/site-media.js','utf8').replace('/*HORIZONTAL_VIDEO*/null',JSON.stringify(JSON.parse(readFileSync('video-horizontal.json','utf8'))))).replace("import './operations.js';",()=>readFileSync('worker/operations.js','utf8')).replace("import './crm.js';",()=>readFileSync('worker/crm.js','utf8')).replace("import './settings.js';",()=>readFileSync('worker/settings.js','utf8')).replace("import './public-projects.js';",()=>projectModule).replace("import './project-updates.js';",()=>readFileSync('worker/project-updates.js','utf8')).replace("import './admin-center.js';",()=>readFileSync('worker/admin-center.js','utf8')).replace("import './private-documents.js';",()=>readFileSync('worker/private-documents.js','utf8').replace('/*PRIVATE_DOCUMENTS*/{}',()=>JSON.stringify(privateDocumentPayload))).replace("import './mcp.js';",()=>readFileSync('worker/mcp.js','utf8'));worker=worker.replace("const ADMIN_EMAIL='admin@example.test';",()=> 'const ADMIN_EMAIL='+JSON.stringify(adminEmail)+';');
+writeFileSync('dist/server/index.js',worker);mkdirSync('dist/.openai',{recursive:true});writeFileSync('dist/.openai/hosting.json',readFileSync('.openai/hosting.json'));console.log('Worker built with',Object.keys(assets).length,'assets');

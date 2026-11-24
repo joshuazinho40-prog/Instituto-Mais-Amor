@@ -1,0 +1,1 @@
+CREATE TABLE impacto_publicacoes (periodo TEXT PRIMARY KEY NOT NULL,pessoas INTEGER NOT NULL,familias INTEGER NOT NULL,atendimentos INTEGER NOT NULL,cestas INTEGER NOT NULL,voluntarios INTEGER NOT NULL,acoes INTEGER NOT NULL,parceiros TEXT NOT NULL,fonte TEXT NOT NULL,atualizado_em TEXT NOT NULL);

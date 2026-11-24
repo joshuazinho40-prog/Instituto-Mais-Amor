@@ -1,0 +1,1 @@
+CREATE TABLE projetos_gestao (id TEXT PRIMARY KEY NOT NULL,titulo TEXT NOT NULL,situacao TEXT NOT NULL,data_inicio TEXT,data_fim TEXT,notas TEXT NOT NULL DEFAULT '',criado_em TEXT NOT NULL,atualizado_em TEXT NOT NULL);

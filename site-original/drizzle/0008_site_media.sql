@@ -1,0 +1,1 @@
+CREATE TABLE site_media (id TEXT PRIMARY KEY NOT NULL,object_key TEXT NOT NULL,nome TEXT NOT NULL,mime TEXT NOT NULL,tamanho INTEGER NOT NULL,atualizado_em TEXT NOT NULL);

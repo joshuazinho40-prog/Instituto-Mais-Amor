@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+output/
+
+# Arquivos locais, credenciais e saídas de compilação
+.env
+.env.*
+!.env.example
+node_modules/
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+/private/documentos/*.pdf
+/dist/server/index.js

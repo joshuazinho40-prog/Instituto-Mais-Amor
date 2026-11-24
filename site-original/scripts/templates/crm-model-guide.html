@@ -1,0 +1,37 @@
+<div class="panel learning-panel" id="modelagem-crm">
+  <div class="eyebrow">APRENDA COM O SEU CRM</div>
+  <h2>Do pedido ao apoio confirmado</h2>
+  <p>O apoio começa no próprio Instituto: cesta básica, acolhimento com roupas e utensílios para casa. O CRM liga cada pedido a uma identidade revisada e à família, sem confundir inscrições com pessoas atendidas. Não há parceiros confirmados neste momento.</p>
+  <ol class="crm-learning-flow" aria-label="Caminho de um pedido de apoio">
+    <li><strong>Receber</strong> o formulário e conferir quem está pedindo.</li>
+    <li><strong>Organizar</strong> a necessidade, a família, a prioridade e o próximo passo.</li>
+    <li><strong>Organizar a entrega</strong> na unidade interna, com uma pessoa responsável da equipe.</li>
+    <li><strong>Confirmar</strong> a entrega ou atividade que realmente aconteceu.</li>
+  </ol>
+  <p><a class="text-button" href="#crm">Abrir o CRM do Instituto</a></p>
+  <details>
+    <summary>Pessoas, famílias e cadastros: por que separar?</summary>
+    <p>O cadastro é o contato original, com protocolo. A pessoa é uma identidade administrativa conferida. A família é um grupo ligado às pessoas por vínculos. Dois pedidos podem pertencer à mesma pessoa; duas pessoas também podem compartilhar um telefone. Por isso, o sistema não une identidades automaticamente pelo nome ou contato.</p>
+    <p>Em banco de dados, cada entidade tem uma chave. As chaves estrangeiras conectam os registros sem repetir a ficha inteira em todo pedido. Os nomes continuam legíveis na tela porque o servidor consulta essas relações.</p>
+  </details>
+  <details>
+    <summary>Normalização: da 1FN à 5FN, aplicada ao projeto</summary>
+    <p><strong>1FN:</strong> contatos e áreas de atuação ocupam linhas próprias, em vez de listas dentro de uma célula. <strong>2FN:</strong> o nome do profissional fica na ficha dele, sem se repetir em cada vínculo com um serviço. <strong>3FN:</strong> o pedido referencia o serviço; seu nome e tipo ficam no catálogo.</p>
+    <p><strong>BCNF:</strong> um cadastro de origem identifica no máximo uma pessoa canônica por vez; nome e telefone não são chaves de identidade. <strong>4FN:</strong> áreas de atuação e horários declarados são relações independentes, sem multiplicar cada área por cada horário. <strong>5FN:</strong> somente relações justificadas pelas regras podem ser reconstruídas por junções. Um profissional e uma unidade oferecerem o mesmo serviço não prova que ele atende naquele local.</p>
+    <p>Esses princípios orientam o novo núcleo. As tabelas anteriores foram preservadas; não há promessa de que todo o legado atende a todas as formas normais. A 6FN e a forma domínio-chave são temas avançados, usados quando as regras do problema justificam sua aplicação.</p>
+  </details>
+  <details>
+    <summary>Quando pessoas, cestas, roupas e utensílios entram no controle?</summary>
+    <p>Somente uma ocorrência confirmada como realizada entra no apoio efetivo. Pessoas são identidades distintas no mês; famílias são grupos distintos vinculados à realização; cestas são a soma das cestas realmente entregues. Roupas são registradas em peças e utensílios em itens: não some medidas diferentes como se fossem iguais. Uma entrega com várias peças continua sendo uma ocorrência. Integrantes da família não são automaticamente contados como pessoas atendidas.</p>
+    <p>Se uma entrega já estiver na agenda, o vínculo entre os registros evita contar o mesmo fato duas vezes. Editar a mesma realização corrige o resultado; cancelar retira sua contagem. Origens ainda sem identidade conciliada aparecem separadamente. Os meses seguem Brasília, e os totais históricos não são somados sem conferência.</p>
+  </details>
+  <details>
+    <summary>Exemplo: organizar um pedido de cesta básica</summary>
+    <p>Receba o contato, confira a identidade e vincule a família quando conhecida. Classifique como Cesta básica, defina prioridade, responsável e prazo. Organize a separação ou retirada na unidade interna do Instituto e crie uma tarefa de retorno se necessário. Depois da entrega, registre a realização com data e número de cestas. Para roupas, informe peças; para utensílios, informe itens.</p>
+    <p>Encaminhar não comprova entrega. A disponibilidade informada pela equipe precisa de confirmação. Cadastrar alguém da equipe não cria acesso ao painel, e registrar o destino não envia mensagens automáticas. O botão de preparação inicial configura os três apoios e o destino interno; não insere pedidos ou entregas fictícias.</p>
+  </details>
+  <details>
+    <summary>Como registrar o bazar beneficente?</summary>
+    <p>Use a área de ações institucionais para informar o bazar, sua data e seu conteúdo. Visitantes e vendas não são contados automaticamente como pessoas apoiadas. Se alguém receber um apoio gratuito real, registre essa entrega separadamente no CRM. O relato do bazar não substitui um controle financeiro ou de estoque.</p>
+  </details>
+</div>

@@ -1,0 +1,88 @@
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync,readdirSync} from 'node:fs';
+import assert from 'node:assert/strict';
+import worker from '../dist/server/index.js';
+const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON');
+for(const file of readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())db.exec(readFileSync('drizzle/'+file,'utf8').replaceAll('--> statement-breakpoint',''));
+class Q{constructor(sql){this.sql=sql;this.args=[];}bind(...args){this.args=args;return this;}async first(){return db.prepare(this.sql).get(...this.args)||null;}async all(){return {results:db.prepare(this.sql).all(...this.args)};}async run(){return {meta:{changes:Number(db.prepare(this.sql).run(...this.args).changes)}};}}
+const objects=new Map();let failSave=false,failDelete=false;
+const env={DB:{prepare:sql=>new Q(sql),async batch(queries){db.exec('BEGIN');try{const results=[];for(const query of queries){if((failSave&&query.sql.startsWith('INSERT INTO acoes_fotos'))||(failDelete&&query.sql.startsWith('DELETE FROM acoes WHERE')))throw Error('simulated storage metadata failure');results.push(await query.run());}db.exec('COMMIT');return results;}catch(error){db.exec('ROLLBACK');throw error;}}},BUCKET:{async put(key,body){objects.set(key,{body});},async get(key){return objects.get(key)||null;},async head(key){return objects.get(key)||null;},async delete(key){objects.delete(key);}}};
+const origin='https://updates.test',owner={'oai-authenticated-user-id':'owner','oai-authenticated-user-email':'admin@example.test'},other={'oai-authenticated-user-id':'other','oai-authenticated-user-email':'other@example.org'};
+const call=(path,method='GET',body,headers={})=>worker.fetch(new Request(origin+path,{method,headers:{Origin:origin,'Content-Type':'application/json',...headers},body:body===undefined?undefined:JSON.stringify(body)}),env);
+const data=async response=>response.json();
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jC8sAAAAASUVORK5CYII=','base64');
+const upload=(body=png,headers=owner)=>worker.fetch(new Request(origin+'/api/admin/atualizacoes/foto',{method:'POST',headers:{Origin:origin,'Content-Type':'image/png',...headers},body}),env);
+for(const headers of [{},other]){assert.equal((await call('/api/admin/atualizacoes','GET',undefined,headers)).status,403);assert.equal((await upload(png,headers)).status,403);}
+assert.equal((await upload(png,{...owner,Origin:'https://other.test'})).status,403);
+assert.equal((await upload(Buffer.from('<script>bad</script>'))).status,400);
+const catalog=await data(await call('/api/admin/projetos-site','GET',undefined,owner));assert.equal(catalog.items.length,8);
+const image=await data(await upload());assert.ok(image.capa);assert.equal((await call(image.capa)).status,404);assert.equal((await call(image.capa,'HEAD')).status,404);assert.equal((await call(image.capa,'GET',undefined,owner)).status,200);
+const body={titulo:'Atividade fictícia de teste',resumo:'',conteudo:'',data_realizacao:new Date(Date.now()-10800000).toISOString().slice(0,10),projeto_publico_id:'1',publicada:false,fotos_autorizadas:false,fotos:[{caminho:image.capa,descricao:'',legenda:''}]};
+let result=await call('/api/admin/atualizacoes','POST',body,owner);assert.equal(result.status,201);let draft=(await data(result)).item;assert.equal(draft.fotos.length,1);assert.equal(draft.versao,1);
+assert.equal((await call(image.capa)).status,404);assert.ok(!(await(await call('/projeto-1.html')).text()).includes(body.titulo));
+const preview=await(await call('/projeto-1.html?preview=1','GET',undefined,owner)).text();assert.ok(preview.includes(body.titulo));assert.ok(preview.includes('Rascunho · somente na prévia'));
+assert.ok(!(await(await call('/projeto-1.html?preview=1','GET',undefined,other)).text()).includes(body.titulo));
+assert.equal((await call('/api/admin/atualizacoes','POST',{...draft,publicada:true},owner)).status,400);
+const publish={...draft,publicada:true,resumo:'Uma atividade fictícia, criada apenas no banco de teste.',conteudo:'Relato com <script>alert(1)</script>.',fotos:[{...draft.fotos[0],descricao:'Equipe organizando materiais',legenda:'Imagem de teste <b>apenas</b>'}]};
+assert.equal((await call('/api/admin/atualizacoes','POST',publish,owner)).status,400);
+assert.equal((await call('/api/admin/atualizacoes','POST',{...publish,fotos_autorizadas:true,fotos:[publish.fotos[0],publish.fotos[0]]},owner)).status,400);
+result=await call('/api/admin/atualizacoes','POST',{...publish,fotos_autorizadas:true},owner);assert.equal(result.status,200);let published=(await data(result)).item;assert.equal(published.versao,2);
+let page=await(await call('/projeto-1.html')).text();assert.ok(page.includes(body.titulo));assert.ok(page.includes(image.capa));assert.ok(page.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!page.includes('<script>alert(1)</script>'));assert.ok(page.includes('&lt;b&gt;apenas&lt;/b&gt;'));
+const imagePublic=await call(image.capa);assert.equal(imagePublic.status,200);assert.equal(imagePublic.headers.get('content-type'),'image/png');assert.deepEqual(Buffer.from(await imagePublic.arrayBuffer()),png);
+assert.equal((await call(image.capa,'HEAD')).status,200);assert.equal((await data(await call('/api/acoes'))).items.filter(a=>a.id===draft.id).length,1);
+const metrics=await data(await call('/api/admin/overview?periodo='+body.data_realizacao.slice(0,7),'GET',undefined,owner));assert.equal(metrics.acoes.find(a=>a.publicada===1).total,1);
+// A stale editor must not alter either the article or its gallery.
+assert.equal((await call('/api/admin/atualizacoes','POST',{...publish,fotos_autorizadas:true,fotos:[]},owner)).status,409);
+assert.equal(db.prepare('SELECT count(*) AS n FROM acoes_fotos WHERE acao_id=?').get(draft.id).n,1);
+assert.equal(db.prepare('SELECT versao FROM acoes WHERE id=?').get(draft.id).versao,2);
+assert.equal((await call('/api/admin/acoes','POST',{...body,id:draft.id,resumo:publish.resumo,publicada:true},owner)).status,409);
+// An atomic save must roll back text, visibility, version and gallery together.
+failSave=true;assert.equal((await call('/api/admin/atualizacoes','POST',{...published,titulo:'NÃO DEVE SER SALVO'},owner)).status,500);failSave=false;
+assert.equal(db.prepare('SELECT titulo FROM acoes WHERE id=?').get(draft.id).titulo,body.titulo);assert.equal((await call(image.capa)).status,200);
+const project=catalog.items.find(p=>p.id==='1');
+let projectResult=await data(await call('/api/admin/projetos-site','POST',{...project,publicada:false},owner));assert.ok(projectResult.item);
+assert.equal((await call('/projeto-1.html')).status,404);assert.equal((await call(image.capa)).status,404);assert.ok(!(await data(await call('/api/acoes'))).items.some(a=>a.id===draft.id));
+assert.equal((await call('/api/admin/atualizacoes','POST',{...published},owner)).status,409);
+assert.equal((await call('/api/admin/projetos-site/excluir','POST',{id:'1',versao:projectResult.item.versao,confirmacao:'1'},owner)).status,409);
+projectResult=await data(await call('/api/admin/projetos-site','POST',{...projectResult.item,publicada:true},owner));assert.ok(projectResult.item);
+result=await call('/api/admin/atualizacoes','POST',{...published,publicada:false},owner);assert.equal(result.status,200);published=(await data(result)).item;assert.equal((await call(image.capa)).status,404);
+result=await call('/api/admin/atualizacoes','POST',{...published,publicada:true,fotos:[],fotos_autorizadas:false},owner);assert.equal(result.status,200);published=(await data(result)).item;assert.equal((await call(image.capa)).status,404);
+// Reports may be saved without photographs, edited and retrieved in bounded pages.
+for(let index=0;index<21;index++)assert.equal((await call('/api/admin/atualizacoes','POST',{...body,titulo:'Histórico '+index,fotos:[],publicada:true,resumo:'Relato de teste da atividade '+index},owner)).status,201);
+const first=await data(await call('/api/admin/atualizacoes?projeto=1','GET',undefined,owner)),second=await data(await call('/api/admin/atualizacoes?projeto=1&pagina=2','GET',undefined,owner));assert.equal(first.items.length,20);assert.equal(second.items.length,2);assert.equal(first.total,22);assert.ok(!first.items.some(a=>second.items.some(b=>a.id===b.id)));
+assert.ok((await(await call('/projeto-1.html')).text()).includes('Página 1 de 3'));assert.ok((await(await call('/projeto-1.html?pagina=3')).text()).includes('Página 3 de 3'));
+const selectedPage=await(await call('/projeto-1.html?acao='+published.id)).text();assert.ok(selectedPage.includes('id="acao-'+published.id+'"'));
+const home=await(await call('/')).text();assert.ok(!home.includes('brand-motion.js'));assert.ok(!home.includes('identidade-em-movimento'));assert.ok(home.includes('hero-video.js'));
+const adminHtml=await(await call('/admin','GET',undefined,owner)).text();assert.ok(adminHtml.includes('id="inicio"'));assert.ok(adminHtml.includes('id="acoes-projetos"'));assert.ok(adminHtml.includes('workspace-more'));assert.ok(adminHtml.includes('1920 × 1080'));
+console.log('PASS project updates: authenticated uploads; draft and parent-project privacy; image consent; escaped public reports; ordered galleries; single-count actions; stale-editor protection; transactional rollback; unpublished photos denied by GET/HEAD; pagination; protected history; cinematic section removed. All data and media remained in memory.');
+
+// Deletion removes one report atomically; shared images and parent projects survive.
+const deletionEndpoint='/api/admin/atualizacoes/excluir';
+const exclusive=await data(await upload()),shared=await data(await upload());
+const deleteBody={...body,titulo:'Relato para excluir em memória',projeto_publico_id:'3',resumo:'Relato fictício usado apenas para testar a exclusão.',publicada:true,fotos_autorizadas:true,fotos:[{caminho:exclusive.capa,descricao:'Foto exclusiva do relato',legenda:''},{caminho:shared.capa,descricao:'Foto também usada em outro relato',legenda:''}]};
+const toDelete=(await data(await call('/api/admin/atualizacoes','POST',deleteBody,owner))).item;
+const keepBody={...deleteBody,titulo:'Outro relato que deve permanecer',projeto_publico_id:'2',fotos:[deleteBody.fotos[1]]};
+const kept=(await data(await call('/api/admin/atualizacoes','POST',keepBody,owner))).item;
+const confirmation={id:toDelete.id,versao:toDelete.versao,confirmacao:toDelete.id};
+for(const headers of [{},other])assert.equal((await call(deletionEndpoint,'POST',confirmation,headers)).status,403);
+assert.equal((await call(deletionEndpoint,'POST',confirmation,{...owner,Origin:'https://other.test'})).status,403);
+assert.equal((await call(deletionEndpoint,'GET',undefined,owner)).status,405);
+for(const bad of [null,{}, {...confirmation,confirmacao:'errada'},{...confirmation,versao:0},{...confirmation,id:7}])assert.equal((await call(deletionEndpoint,'POST',bad,owner)).status,400);
+const snapshot=()=>({row:db.prepare('SELECT * FROM acoes WHERE id=?').get(toDelete.id),photos:db.prepare('SELECT * FROM acoes_fotos WHERE acao_id=? ORDER BY ordem').all(toDelete.id),audit:db.prepare('SELECT count(*) AS n FROM auditoria').get().n});
+const beforeDelete=snapshot();
+assert.equal((await call(deletionEndpoint,'POST',{...confirmation,versao:toDelete.versao+1},owner)).status,409);assert.deepEqual(snapshot(),beforeDelete);
+failDelete=true;assert.equal((await call(deletionEndpoint,'POST',confirmation,owner)).status,500);failDelete=false;assert.deepEqual(snapshot(),beforeDelete);
+const metricsBefore=await data(await call('/api/admin/overview?periodo='+body.data_realizacao.slice(0,7),'GET',undefined,owner));
+const removedResponse=await call(deletionEndpoint,'POST',confirmation,owner);assert.equal(removedResponse.status,200);const removed=await data(removedResponse);assert.equal(removed.id,toDelete.id);assert.equal(removed.periodo,body.data_realizacao.slice(0,7));
+assert.equal(db.prepare('SELECT id FROM acoes WHERE id=?').get(toDelete.id),undefined);assert.equal(db.prepare('SELECT count(*) AS n FROM acoes_fotos WHERE acao_id=?').get(toDelete.id).n,0);
+assert.equal((await call('/api/admin/atualizacoes?id='+toDelete.id,'GET',undefined,owner)).status,404);
+assert.ok(!(await data(await call('/api/acoes'))).items.some(row=>row.id===toDelete.id));assert.ok(!(await(await call('/projeto-3.html')).text()).includes(deleteBody.titulo));
+for(const method of ['GET','HEAD'])assert.equal((await call(exclusive.capa,method)).status,404);
+assert.equal((await call(shared.capa)).status,200);assert.equal((await call('/api/admin/atualizacoes?id='+kept.id,'GET',undefined,owner)).status,200);assert.equal((await call('/projeto-3.html')).status,200);
+const metricsAfter=await data(await call('/api/admin/overview?periodo='+body.data_realizacao.slice(0,7),'GET',undefined,owner));assert.equal(metricsAfter.acoes.find(row=>row.publicada===1).total,metricsBefore.acoes.find(row=>row.publicada===1).total-1);
+assert.equal(db.prepare("SELECT count(*) AS n FROM auditoria WHERE acao='excluir_acao' AND registro_id=? AND ator='owner'").get(toDelete.id).n,1);
+assert.equal((await call(deletionEndpoint,'POST',confirmation,owner)).status,404);
+assert.equal((await call('/api/admin/atualizacoes','POST',{...toDelete,titulo:'Tentativa de reabrir relato excluído'},owner)).status,404);
+const draftToDelete=(await data(await call('/api/admin/atualizacoes','POST',{...body,titulo:'Rascunho para excluir',projeto_publico_id:'3',fotos:[]},owner))).item;
+assert.equal((await call(deletionEndpoint,'POST',{id:draftToDelete.id,versao:draftToDelete.versao,confirmacao:draftToDelete.id},owner)).status,200);
+console.log('PASS deletion: owner and origin checks, explicit confirmation, stale versions, atomic rollback, published and draft reports, public gallery removal, preserved shared photos and parent projects, updated metrics, single audit and no recreation of deleted reports. All records stayed in memory.');

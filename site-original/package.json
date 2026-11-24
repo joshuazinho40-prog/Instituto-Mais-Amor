@@ -1,0 +1,12 @@
+{
+  "name": "instituto-mais-amor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/preview-worker.mjs",
+    "build": "node scripts/build-worker.mjs",
+    "check": "node --check dist/project-updates-admin.js && node --check dist/admin-center.js && node --check worker/project-updates.js && python3 scripts/check.py",
+    "package": "python3 scripts/package.py",
+    "test": "node scripts/build-worker.mjs && node scripts/test-worker.mjs && node scripts/test-media.mjs && node scripts/test-operations.mjs && node scripts/test-crm.mjs && node scripts/test-project-updates.mjs"
+  }
+}
